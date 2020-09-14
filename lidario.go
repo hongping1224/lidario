@@ -58,7 +58,7 @@ func NewLasFile(fileName, fileMode string) (*LasFile, error) {
 		}
 
 		// initialize the point, gps, and rgb data slices and set the capacity
-		initCapacity := 1000000
+		initCapacity := 10000
 		las.pointData = make([]PointRecord0, 0, initCapacity)
 		if las.Header.PointFormatID == 1 || las.Header.PointFormatID == 3 {
 			las.gpsData = make([]float64, 0, initCapacity)
@@ -93,13 +93,13 @@ func InitializeUsingFile(fileName string, other *LasFile) (*LasFile, error) {
 	}
 
 	// initialize the point, gps, and rgb data slices and set the capacity to that of the other file
-	las.pointData = make([]PointRecord0, 0, other.Header.NumberPoints)
+	las.pointData = make([]PointRecord0, 0, 10000)
 	if other.Header.PointFormatID == 1 || other.Header.PointFormatID == 3 {
-		las.gpsData = make([]float64, 0, other.Header.NumberPoints)
+		las.gpsData = make([]float64, 0, 10000)
 	}
 
 	if other.Header.PointFormatID == 2 || other.Header.PointFormatID == 3 {
-		las.rgbData = make([]RgbData, 0, other.Header.NumberPoints)
+		las.rgbData = make([]RgbData, 0, 10000)
 	}
 
 	return &las, nil
@@ -544,17 +544,20 @@ func (las *LasFile) readPoints() error {
 	// Intensity and userdata are both optional. Figure out if they need to be read.
 	// The only way to do this is to compare the point record length by point format
 	recLengths := [4][4]int{{20, 18, 19, 17}, {28, 26, 27, 25}, {26, 24, 25, 23}, {34, 32, 33, 31}}
-
-	if las.Header.PointRecordLength == recLengths[las.Header.PointFormatID][0] {
+	PointFormatID := las.Header.PointFormatID
+	if int(las.Header.PointFormatID) > len(recLengths) {
+		PointFormatID = 0
+	}
+	if las.Header.PointRecordLength == recLengths[PointFormatID][0] {
 		las.usePointIntensity = true
 		las.usePointUserdata = true
-	} else if las.Header.PointRecordLength == recLengths[las.Header.PointFormatID][1] {
+	} else if las.Header.PointRecordLength == recLengths[PointFormatID][1] {
 		las.usePointIntensity = false
 		las.usePointUserdata = true
-	} else if las.Header.PointRecordLength == recLengths[las.Header.PointFormatID][2] {
+	} else if las.Header.PointRecordLength == recLengths[PointFormatID][2] {
 		las.usePointIntensity = true
 		las.usePointUserdata = false
-	} else if las.Header.PointRecordLength == recLengths[las.Header.PointFormatID][3] {
+	} else if las.Header.PointRecordLength == recLengths[PointFormatID][3] {
 		las.usePointIntensity = false
 		las.usePointUserdata = false
 	}
