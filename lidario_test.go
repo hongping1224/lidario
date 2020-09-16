@@ -111,3 +111,14 @@ func TestWriteLasFile(t *testing.T) {
 	}
 
 }
+
+func TestFixedLengthString(t *testing.T) {
+	for i := 0; i < 40; i++ {
+		//t.Log(i)
+		s := make([]byte, i)
+		res := fixedLengthString(string(s), 32)
+		if len(res) != 32 {
+			t.Fatalf("Get %d instead of %d", len(res), 32)
+		}
+	}
+}

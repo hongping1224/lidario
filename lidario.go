@@ -1959,13 +1959,14 @@ type RgbData struct {
 
 // Creates a fixed-length string with buffer characters as null
 func fixedLengthString(s string, length int) string {
-	var b bytes.Buffer
+	byte32 := make([]byte, length)
 	for n := 0; n < length; n++ {
 		if n < len(s) && n < length {
-			b.WriteString(string(s[n]))
+			byte32[n] = s[n]
 		} else {
-			b.WriteString("\x00")
+			byte32[n] = "\x00"[0]
 		}
 	}
-	return b.String()
+	return string(byte32)
+
 }
